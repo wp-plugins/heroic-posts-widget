@@ -1,10 +1,10 @@
 <?php
 /*
 *	Plugin Name: Heroic Posts Widget
-*	Plugin URI:  http://wordpress.org/plugins/hero-themes-posts-widget
-*	Description: 
+*	Plugin URI:  http://wordpress.org/plugins/heroic-posts-widget/
+*	Description: A posts widget for WordPress
 *	Author: Hero Themes
-*	Version: 1.0
+*	Version: 1.1
 *	Author URI: http://www.herothemes.com/
 *	Text Domain: ht-posts-widget
 */
@@ -96,18 +96,12 @@ if(!class_exists('HT_Posts_Widget_Plugin')){
 
 		  <li class="clearfix <?php if ($instance['thumb']) {  ?>has-thumb<?php }  ?>"> 
 
-			<?php if ( (function_exists('has_post_thumbnail')) && $instance['thumb']) :  ?>
-				<?php if ( (has_post_thumbnail())  ) :  ?>
-					<div class="widget-entry-thumb">
-						<a href="<?php the_permalink(); ?>" rel="nofollow">
-						<?php the_post_thumbnail(); ?>
-						</a>
-					</div>
-				<?php else: ?>
-					<div class="widget-entry-thumb no-thumb <?php echo get_post_format() ?>">
-						<a href="<?php the_permalink(); ?>" rel="nofollow"><i class="fa fa-asterix"></i></a>
-					</div>
-				<?php endif; //Has thumb ?>
+			<?php if ( function_exists('has_post_thumbnail') && $instance['thumb'] && has_post_thumbnail() ) :  ?>
+				<div class="widget-entry-thumb">
+					<a href="<?php the_permalink(); ?>" rel="nofollow">
+					<?php the_post_thumbnail(); ?>
+					</a>
+				</div>
 			<?php endif; //Show thumbnail ?>
 
 			<a class="widget-entry-title" href="<?php the_permalink(); ?>" rel="bookmark" title="<?php the_title_attribute(); ?>"><?php the_title(); ?></a>
@@ -142,10 +136,13 @@ if(!class_exists('HT_Posts_Widget_Plugin')){
   } // end widget
 
   /**
-  * function to enwueue ht-posts-widget-style if widget is used
+  * function to enqueue ht-posts-widget-style if widget is used and current theme doesn't supply own style
   */
   public function load_stylesheets(){
-    wp_enqueue_style( 'ht-posts-widget-style', plugins_url( 'css/ht-posts-widget-style.css', __FILE__ ));
+    if( !current_theme_supports('ht_posts_widget_styles') ){
+      wp_enqueue_style( 'ht-posts-widget-style', plugins_url( 'css/ht-posts-widget-style.css', __FILE__ ) );
+    }
+      
   }
 
   /**
@@ -187,10 +184,15 @@ if(!class_exists('HT_Posts_Widget_Plugin')){
     $defaults = array(
       'title' => 'Latest Posts',
       'num' => '5',
-      'sort_by' => '',
-      'asc_sort_order' => '',
+      'sort_by' => 'date',
+      'asc_sort_order' => 0,
       'exclude' => '',
-      'category' => 'all'
+      'date' => 0,
+      'comment_num' => 0,
+      'excerpt' => 0,
+      'category' => 'all',
+      'thumb' => 0,
+
     );
     $instance = wp_parse_args( (array) $instance, $defaults );
 
@@ -293,7 +295,7 @@ if(!class_exists('HT_Posts_Widget_Plugin')){
 	<?php if ( function_exists('the_post_thumbnail') && current_theme_supports("post-thumbnails") ) : ?>
 	<p>
 	  <label for="<?php echo $this->get_field_id('thumb'); ?>">
-	    <input type="checkbox" <?php echo $thumb; ?> class="checkbox" id="<?php echo $this->get_field_id('thumb'); ?>" name="<?php echo $this->get_field_name('thumb'); ?>"<?php checked( (bool) $instance["thumb"], true ); ?> />
+	    <input type="checkbox" class="checkbox" id="<?php echo $this->get_field_id('thumb'); ?>" name="<?php echo $this->get_field_name('thumb'); ?>"<?php checked( (bool) $instance["thumb"], true ); ?> />
 	    <?php _e( 'Show post thumbnail', 'ht-posts-widget' ); ?>
 	  </label>
 	</p>
